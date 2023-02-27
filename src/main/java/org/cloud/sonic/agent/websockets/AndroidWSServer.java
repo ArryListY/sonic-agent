@@ -44,6 +44,7 @@ import org.cloud.sonic.agent.transport.TransportWorker;
 import org.cloud.sonic.driver.common.tool.SonicRespException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.messaging.Message;
 import org.springframework.stereotype.Component;
 
 import javax.imageio.stream.FileImageOutputStream;
@@ -134,11 +135,13 @@ public class AndroidWSServer implements IAndroidWSServer {
         if (!currentIme.contains("org.cloud.sonic.android/.keyboard.SonicKeyboard")) {
             AndroidDeviceBridgeTool.executeCommand(iDevice, "ime enable org.cloud.sonic.android/.keyboard.SonicKeyboard");
             AndroidDeviceBridgeTool.executeCommand(iDevice, "ime set org.cloud.sonic.android/.keyboard.SonicKeyboard");
+//            AndroidDeviceBridgeTool.executeCommand(iDevice, "ime disable org.cloud.sonic.android/.keyboard.SonicKeyboard");
+//            log.info("stopKeyboard");
         }
     }
 
     @OnClose
-    public void onClose(Session session) {
+    public void onClose(Session session){
         String udId = (String) session.getUserProperties().get("udId");
         try {
             exit(session);
@@ -392,6 +395,7 @@ public class AndroidWSServer implements IAndroidWSServer {
                     androidStepHandler.startAndroidDriver(iDevice, port);
                     result.put("status", "success");
                     HandlerMap.getAndroidMap().put(session.getUserProperties().get("id").toString(), androidStepHandler);
+                    AndroidDeviceBridgeTool.executeCommand(iDevice, "ime disable org.cloud.sonic.android/.keyboard.SonicKeyboard");
                 } catch (Exception e) {
                     log.error(e.getMessage());
                     result.put("status", "error");
@@ -426,6 +430,7 @@ public class AndroidWSServer implements IAndroidWSServer {
                 SGMTool.stopProxy(iDevice.getSerialNumber());
                 AndroidAPKMap.getMap().remove(iDevice.getSerialNumber());
                 AndroidTouchHandler.stopTouch(iDevice);
+                AndroidDeviceBridgeTool.executeCommand(iDevice, "ime disable org.cloud.sonic.android/.keyboard.SonicKeyboard");
             }
             removeUdIdMapAndSet(session);
             WebSocketSessionMap.removeSession(session);
