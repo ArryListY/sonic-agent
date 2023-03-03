@@ -48,8 +48,8 @@ public class AndroidDeviceStatusListener implements AndroidDebugBridge.IDeviceCh
     private void send(IDevice device) {
         JSONObject deviceDetail = new JSONObject();
         deviceDetail.put("msg", "deviceDetail");
-        deviceDetail.put("udId", device.getSerialNumber());
-        deviceDetail.put("name", device.getProperty("ro.product.name"));
+        deviceDetail.put("udId", device.getProperty("persist.radio.serialno"));
+        deviceDetail.put("name", device.getProperty("persist.radio.serialno"));
         deviceDetail.put("model", device.getProperty(IDevice.PROP_DEVICE_MODEL));
         deviceDetail.put("status", device.getState() == null ? null : device.getState().toString());
         deviceDetail.put("platform", PlatformType.ANDROID);
@@ -69,17 +69,17 @@ public class AndroidDeviceStatusListener implements AndroidDebugBridge.IDeviceCh
 
     @Override
     public void deviceConnected(IDevice device) {
-        logger.info("Android device: " + device.getSerialNumber() + " ONLINE！");
-        AndroidDeviceManagerMap.getStatusMap().remove(device.getSerialNumber());
-        DevicesBatteryMap.getTempMap().remove(device.getSerialNumber());
+        logger.info("Android device: " + device.getProperty("persist.radio.serialno") + " ONLINE！");
+        AndroidDeviceManagerMap.getStatusMap().remove(device.getProperty("persist.radio.serialno"));
+        DevicesBatteryMap.getTempMap().remove(device.getProperty("persist.radio.serialno"));
         send(device);
     }
 
     @Override
     public void deviceDisconnected(IDevice device) {
-        logger.info("Android device: " + device.getSerialNumber() + " OFFLINE！");
-        AndroidDeviceManagerMap.getStatusMap().remove(device.getSerialNumber());
-        DevicesBatteryMap.getTempMap().remove(device.getSerialNumber());
+        logger.info("Android device: " + device.getProperty("persist.radio.serialno") + " OFFLINE！");
+        AndroidDeviceManagerMap.getStatusMap().remove(device.getProperty("persist.radio.serialno"));
+        DevicesBatteryMap.getTempMap().remove(device.getProperty("persist.radio.serialno"));
         send(device);
     }
 

@@ -68,40 +68,40 @@ public class AndroidBatteryThread implements Runnable {
                 int level = BytesTool.getInt(realLevel.substring(7, realLevel.indexOf("\n")));
                 String realVol = battery.substring(battery.indexOf("voltage")).trim();
                 int vol = BytesTool.getInt(realVol.substring(9, realVol.indexOf("\n")));
-                jsonObject.put("udId", iDevice.getSerialNumber());
+                jsonObject.put("udId",  iDevice.getProperty("persist.radio.serialno"));
                 jsonObject.put("tem", tem);
                 jsonObject.put("level", level);
                 jsonObject.put("vol", vol);
                 detail.add(jsonObject);
                 //control
                 if (tem >= BytesTool.highTemp * 10) {
-                    Integer times = DevicesBatteryMap.getTempMap().get(iDevice.getSerialNumber());
+                    Integer times = DevicesBatteryMap.getTempMap().get(iDevice.getProperty("persist.radio.serialno"));
                     if (times == null) {
                         //Send Error Msg
                         JSONObject errCall = new JSONObject();
                         errCall.put("msg", "errCall");
-                        errCall.put("udId", iDevice.getSerialNumber());
+                        errCall.put("udId", iDevice.getProperty("persist.radio.serialno"));
                         errCall.put("tem", tem);
                         errCall.put("type", 1);
                         TransportWorker.send(errCall);
-                        DevicesBatteryMap.getTempMap().put(iDevice.getSerialNumber(), 1);
+                        DevicesBatteryMap.getTempMap().put(iDevice.getProperty("persist.radio.serialno"), 1);
                     } else {
-                        DevicesBatteryMap.getTempMap().put(iDevice.getSerialNumber(), times + 1);
+                        DevicesBatteryMap.getTempMap().put(iDevice.getProperty("persist.radio.serialno"), times + 1);
                     }
-                    times = DevicesBatteryMap.getTempMap().get(iDevice.getSerialNumber());
+                    times = DevicesBatteryMap.getTempMap().get(iDevice.getProperty("persist.radio.serialno"));
                     if (times >= (BytesTool.highTempTime * 2)) {
                         //Send shutdown Msg
                         JSONObject errCall = new JSONObject();
                         errCall.put("msg", "errCall");
-                        errCall.put("udId", iDevice.getSerialNumber());
+                        errCall.put("udId", iDevice.getProperty("persist.radio.serialno"));
                         errCall.put("tem", tem);
                         errCall.put("type", 2);
                         TransportWorker.send(errCall);
                         AndroidDeviceBridgeTool.shutdown(iDevice);
-                        DevicesBatteryMap.getTempMap().remove(iDevice.getSerialNumber());
+                        DevicesBatteryMap.getTempMap().remove(iDevice.getProperty("persist.radio.serialno"));
                     }
                 } else {
-                    DevicesBatteryMap.getTempMap().remove(iDevice.getSerialNumber());
+                    DevicesBatteryMap.getTempMap().remove(iDevice.getProperty("persist.radio.serialno"));
                 }
             }
         }

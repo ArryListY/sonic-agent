@@ -49,8 +49,8 @@ public class AndroidMonitorHandler {
         public void addOutput(byte[] data, int offset, int length) {
             String res = new String(data, offset, length).replaceAll("\n", "").replaceAll("\r", "");
             if (res.length() > 0) {
-                log.info(iDevice.getSerialNumber() + " rotation: " + res);
-                AndroidDeviceManagerMap.getRotationMap().put(iDevice.getSerialNumber(), Integer.parseInt(res));
+                log.info(iDevice.getProperty("persist.radio.serialno") + " rotation: " + res);
+                AndroidDeviceManagerMap.getRotationMap().put(iDevice.getProperty("persist.radio.serialno"), Integer.parseInt(res));
                 receiver.output(res);
             }
         }
@@ -67,7 +67,7 @@ public class AndroidMonitorHandler {
     }
 
     public boolean isMonitorRunning(IDevice iDevice) {
-        return rotationMap.get(iDevice.getSerialNumber()) != null;
+        return rotationMap.get(iDevice.getProperty("persist.radio.serialno")) != null;
     }
 
     public void startMonitor(IDevice iDevice, IMonitorOutputReceiver receiver) {
@@ -84,18 +84,18 @@ public class AndroidMonitorHandler {
                         , new MonitorOutputReceiver(iDevice, receiver), 0, TimeUnit.MILLISECONDS);
             } catch (Exception e) {
                 log.info("{} rotation service stopped."
-                        , iDevice.getSerialNumber());
+                        , iDevice.getProperty("persist.radio.serialno"));
                 log.error(e.getMessage());
             }
         });
         rotationPro.start();
-        rotationMap.put(iDevice.getSerialNumber(), rotationPro);
+        rotationMap.put(iDevice.getProperty("persist.radio.serialno"), rotationPro);
     }
 
     public void stopMonitor(IDevice iDevice) {
-        if (rotationMap.get(iDevice.getSerialNumber()) != null) {
-            rotationMap.get(iDevice.getSerialNumber()).interrupt();
+        if (rotationMap.get(iDevice.getProperty("persist.radio.serialno")) != null) {
+            rotationMap.get(iDevice.getProperty("persist.radio.serialno")).interrupt();
         }
-        rotationMap.remove(iDevice.getSerialNumber());
+        rotationMap.remove(iDevice.getProperty("persist.radio.serialno"));
     }
 }

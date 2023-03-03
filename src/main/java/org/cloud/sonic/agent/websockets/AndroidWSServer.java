@@ -166,8 +166,8 @@ public class AndroidWSServer implements IAndroidWSServer {
         IDevice iDevice = udIdMap.get(session);
         switch (msg.getString("type")) {
             case "startPerfmon" ->
-                    AndroidSupplyTool.startPerfmon(iDevice.getSerialNumber(), msg.getString("bundleId"), session, null, 1000);
-            case "stopPerfmon" -> AndroidSupplyTool.stopPerfmon(iDevice.getSerialNumber());
+                    AndroidSupplyTool.startPerfmon(iDevice.getProperty("persist.radio.serialno"), msg.getString("bundleId"), session, null, 1000);
+            case "stopPerfmon" -> AndroidSupplyTool.stopPerfmon(iDevice.getProperty("persist.radio.serialno"));
             case "startKeyboard" -> {
                 String currentIme = AndroidDeviceBridgeTool.executeCommand(iDevice, "settings get secure default_input_method");
                 if (!currentIme.contains("org.cloud.sonic.android/.keyboard.SonicKeyboard")) {
@@ -184,7 +184,7 @@ public class AndroidWSServer implements IAndroidWSServer {
                 Socket webPortSocket = PortTool.getBindSocket();
                 int pPort = PortTool.releaseAndGetPort(portSocket);
                 int webPort = PortTool.releaseAndGetPort(webPortSocket);
-                SGMTool.startProxy(iDevice.getSerialNumber(), SGMTool.getCommand(pPort, webPort));
+                SGMTool.startProxy(iDevice.getProperty("persist.radio.serialno"), SGMTool.getCommand(pPort, webPort));
                 AndroidDeviceBridgeTool.startProxy(iDevice, getHost(), pPort);
                 JSONObject proxy = new JSONObject();
                 proxy.put("webPort", webPort);
@@ -265,7 +265,7 @@ public class AndroidWSServer implements IAndroidWSServer {
                         JSONObject jsonDebug = new JSONObject();
                         jsonDebug.put("msg", "findSteps");
                         jsonDebug.put("key", key);
-                        jsonDebug.put("udId", iDevice.getSerialNumber());
+                        jsonDebug.put("udId", iDevice.getProperty("persist.radio.serialno"));
                         jsonDebug.put("pwd", msg.getString("pwd"));
                         jsonDebug.put("sessionId", session.getUserProperties().get("id").toString());
                         jsonDebug.put("caseId", msg.getInteger("caseId"));
@@ -361,7 +361,7 @@ public class AndroidWSServer implements IAndroidWSServer {
                                     if (!folder.exists()) {
                                         folder.mkdirs();
                                     }
-                                    File output = new File(folder + File.separator + iDevice.getSerialNumber() + Calendar.getInstance().getTimeInMillis() + ".png");
+                                    File output = new File(folder + File.separator + iDevice.getProperty("persist.radio.serialno") + Calendar.getInstance().getTimeInMillis() + ".png");
                                     try {
                                         byte[] bt = androidStepHandler.findEle("xpath", msg.getString("xpath")).screenshot();
                                         FileImageOutputStream imageOutput = new FileImageOutputStream(output);
@@ -386,11 +386,11 @@ public class AndroidWSServer implements IAndroidWSServer {
     private void openDriver(IDevice iDevice, Session session) {
         synchronized (session) {
             AndroidStepHandler androidStepHandler = new AndroidStepHandler();
-            androidStepHandler.setTestMode(0, 0, iDevice.getSerialNumber(), DeviceStatus.DEBUGGING, session.getUserProperties().get("id").toString());
+            androidStepHandler.setTestMode(0, 0, iDevice.getProperty("persist.radio.serialno"), DeviceStatus.DEBUGGING, session.getUserProperties().get("id").toString());
             JSONObject result = new JSONObject();
             AndroidDeviceThreadPool.cachedThreadPool.execute(() -> {
                 try {
-                    AndroidDeviceLocalStatus.startDebug(iDevice.getSerialNumber());
+                    AndroidDeviceLocalStatus.startDebug(iDevice.getProperty("persist.radio.serialno"));
                     int port = AndroidDeviceBridgeTool.startUiaServer(iDevice);
                     androidStepHandler.startAndroidDriver(iDevice, port);
                     result.put("status", "success");
@@ -425,10 +425,10 @@ public class AndroidWSServer implements IAndroidWSServer {
             if (iDevice != null) {
                 AndroidDeviceBridgeTool.clearProxy(iDevice);
                 AndroidDeviceBridgeTool.clearWebView(iDevice);
-                AndroidSupplyTool.stopShare(iDevice.getSerialNumber());
-                AndroidSupplyTool.stopPerfmon(iDevice.getSerialNumber());
-                SGMTool.stopProxy(iDevice.getSerialNumber());
-                AndroidAPKMap.getMap().remove(iDevice.getSerialNumber());
+                AndroidSupplyTool.stopShare(iDevice.getProperty("persist.radio.serialno"));
+                AndroidSupplyTool.stopPerfmon(iDevice.getProperty("persist.radio.serialno"));
+                SGMTool.stopProxy(iDevice.getProperty("persist.radio.serialno"));
+                AndroidAPKMap.getMap().remove(iDevice.getProperty("persist.radio.serialno"));
                 AndroidTouchHandler.stopTouch(iDevice);
                 AndroidDeviceBridgeTool.executeCommand(iDevice, "ime disable org.cloud.sonic.android/.keyboard.SonicKeyboard");
             }

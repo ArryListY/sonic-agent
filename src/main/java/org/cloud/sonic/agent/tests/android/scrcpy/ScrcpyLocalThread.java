@@ -57,7 +57,7 @@ public class ScrcpyLocalThread extends Thread {
         this.iDevice = iDevice;
         this.finalC = finalC;
         this.session = session;
-        this.udId = iDevice.getSerialNumber();
+        this.udId = iDevice.getProperty("persist.radio.serialno");
         this.androidTestTaskBootThread = androidTestTaskBootThread;
 
         this.setDaemon(true);
@@ -126,7 +126,7 @@ public class ScrcpyLocalThread extends Thread {
                         }
                     }, 0, TimeUnit.MILLISECONDS);
         } catch (Exception e) {
-            log.info("{} scrcpy service stopped.", iDevice.getSerialNumber());
+            log.info("{} scrcpy service stopped.", iDevice.getProperty("persist.radio.serialno"));
             log.error(e.getMessage());
         }
     }

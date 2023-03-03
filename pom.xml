@@ -120,6 +120,11 @@
             <artifactId>aspectjweaver</artifactId>
             <version>1.9.19</version>
         </dependency>
+        <dependency>
+            <groupId>com.android.tools</groupId>
+            <artifactId>sdklib</artifactId>
+            <version>27.0.2</version>
+        </dependency>
     </dependencies>
 
     <repositories>
@@ -138,6 +143,11 @@
             <snapshots>
                 <enabled>false</enabled>
             </snapshots>
+        </repository>
+        <repository>
+            <id>gmaven</id>
+            <name>Google Maven</name>
+            <url>https://maven.google.com/</url>
         </repository>
     </repositories>
 

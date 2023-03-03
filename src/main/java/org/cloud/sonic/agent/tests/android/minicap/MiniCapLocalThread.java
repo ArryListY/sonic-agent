@@ -68,7 +68,7 @@ public class MiniCapLocalThread extends Thread {
         this.pic = pic;
         this.finalC = finalC;
         this.session = session;
-        this.udId = iDevice.getSerialNumber();
+        this.udId = iDevice.getProperty("persist.radio.serialno");
         this.androidTestTaskBootThread = androidTestTaskBootThread;
 
         this.setDaemon(true);
@@ -149,7 +149,7 @@ public class MiniCapLocalThread extends Thread {
                     }
                     if (res.contains("Vector<> have different types")
                             || res.contains("CANNOT LINK EXECUTABLE")) {
-                        log.info(iDevice.getSerialNumber() + "设备不兼容" + type + "投屏！");
+                        log.info(iDevice.getProperty("persist.radio.serialno") + "设备不兼容" + type + "投屏！");
                         isSuc.set(false);
                     }
                 }
@@ -166,7 +166,7 @@ public class MiniCapLocalThread extends Thread {
         } catch (Exception e) {
             isSuc.set(false);
             log.info("{} minicap stopped."
-                    , iDevice.getSerialNumber());
+                    , iDevice.getProperty("persist.radio.serialno"));
             log.error(e.getMessage());
         }
         return isSuc.get();

@@ -157,11 +157,11 @@ public class TransportClient extends WebSocketClient {
                         if (isEnableAndroid) {
                             IDevice[] iDevices = AndroidDeviceBridgeTool.getRealOnLineDevices();
                             for (IDevice d : iDevices) {
-                                String status = AndroidDeviceManagerMap.getStatusMap().get(d.getSerialNumber());
+                                String status = AndroidDeviceManagerMap.getStatusMap().get(d.getProperty("persist.radio.serialno"));
                                 if (status != null) {
-                                    AndroidDeviceLocalStatus.send(d.getSerialNumber(), status);
+                                    AndroidDeviceLocalStatus.send(d.getProperty("persist.radio.serialno"), status);
                                 } else {
-                                    AndroidDeviceLocalStatus.send(d.getSerialNumber(), d.getState() == null ? null : d.getState().toString());
+                                    AndroidDeviceLocalStatus.send(d.getProperty("persist.radio.serialno"), d.getState() == null ? null : d.getState().toString());
                                 }
                             }
                         }

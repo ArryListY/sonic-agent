@@ -157,20 +157,20 @@ public class AndroidScreenWSServer implements IAndroidWSServer {
                 }
                 while (ScreenMap.getMap().get(session) != null);
             }
-            typeMap.putIfAbsent(iDevice.getSerialNumber(), "scrcpy");
-            switch (typeMap.get(iDevice.getSerialNumber())) {
+            typeMap.putIfAbsent(iDevice.getProperty("persist.radio.serialno"), "scrcpy");
+            switch (typeMap.get(iDevice.getProperty("persist.radio.serialno"))) {
                 case "scrcpy" -> {
                     ScrcpyServerUtil scrcpyServerUtil = new ScrcpyServerUtil();
-                    Thread scrcpyThread = scrcpyServerUtil.start(iDevice.getSerialNumber(), AndroidDeviceManagerMap.getRotationMap().get(iDevice.getSerialNumber()), session);
+                    Thread scrcpyThread = scrcpyServerUtil.start(iDevice.getProperty("persist.radio.serialno"), AndroidDeviceManagerMap.getRotationMap().get(iDevice.getProperty("persist.radio.serialno")), session);
                     ScreenMap.getMap().put(session, scrcpyThread);
                 }
                 case "minicap" -> {
                     MiniCapUtil miniCapUtil = new MiniCapUtil();
                     AtomicReference<String[]> banner = new AtomicReference<>(new String[24]);
                     Thread miniCapThread = miniCapUtil.start(
-                            iDevice.getSerialNumber(), banner, null,
-                            picMap.get(iDevice.getSerialNumber()) == null ? "high" : picMap.get(iDevice.getSerialNumber()),
-                            AndroidDeviceManagerMap.getRotationMap().get(iDevice.getSerialNumber()), session
+                            iDevice.getProperty("persist.radio.serialno"), banner, null,
+                            picMap.get(iDevice.getProperty("persist.radio.serialno")) == null ? "high" : picMap.get(iDevice.getProperty("persist.radio.serialno")),
+                            AndroidDeviceManagerMap.getRotationMap().get(iDevice.getProperty("persist.radio.serialno")), session
                     );
                     ScreenMap.getMap().put(session, miniCapThread);
                 }

@@ -21,6 +21,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.android.ddmlib.*;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.http.util.TextUtils;
 import org.cloud.sonic.agent.common.enums.AndroidKey;
 import org.cloud.sonic.agent.common.maps.AndroidThreadMap;
 import org.cloud.sonic.agent.common.maps.AndroidWebViewMap;
@@ -158,12 +159,17 @@ public class AndroidDeviceBridgeTool implements ApplicationListener<ContextRefre
      * @date 2021/8/16 19:38
      */
     public static IDevice[] getRealOnLineDevices() {
-        if (androidDebugBridge != null) {
-            return androidDebugBridge.getDevices();
+        IDevice[] devices = androidDebugBridge.getDevices();
+        if (devices != null) {
+            return devices;
         } else {
             return null;
         }
     }
+
+
+
+
 
     /**
      * @param iDevice
@@ -200,7 +206,7 @@ public class AndroidDeviceBridgeTool implements ApplicationListener<ContextRefre
         for (IDevice device : iDevices) {
             //如果设备是在线状态并且序列号相等，则就是这个设备
             if (device.getState().equals(IDevice.DeviceState.ONLINE)
-                    && device.getSerialNumber().equals(udId)) {
+                    && device.getProperty("persist.radio.serialno").equals(udId)) {
                 iDevice = device;
                 break;
             }
@@ -257,7 +263,7 @@ public class AndroidDeviceBridgeTool implements ApplicationListener<ContextRefre
             iDevice.executeShellCommand(command, output, 0, TimeUnit.MILLISECONDS);
         } catch (Exception e) {
             log.info("Send shell command {} to device {} failed."
-                    , command, iDevice.getSerialNumber());
+                    , command, iDevice.getProperty("persist.radio.serialno"));
             log.error(e.getMessage());
         }
         return output.getOutput();
@@ -305,13 +311,13 @@ public class AndroidDeviceBridgeTool implements ApplicationListener<ContextRefre
      * @date 2021/8/16 19:52
      */
     public static void forward(IDevice iDevice, int port, String service) {
-        String name = String.format("process-%s-forward-%s", iDevice.getSerialNumber(), service);
+        String name = String.format("process-%s-forward-%s", iDevice.getProperty("persist.radio.serialno"), service);
         Integer oldP = forwardPortMap.get(name);
         if (oldP != null) {
             removeForward(iDevice, oldP, service);
         }
         try {
-            log.info("{} device {} port forward to {}", iDevice.getSerialNumber(), service, port);
+            log.info("{} device {} port forward to {}", iDevice.getProperty("persist.radio.serialno"), service, port);
             iDevice.createForward(port, service, IDevice.DeviceUnixSocketNamespace.ABSTRACT);
             forwardPortMap.put(name, port);
         } catch (Exception e) {
@@ -320,13 +326,13 @@ public class AndroidDeviceBridgeTool implements ApplicationListener<ContextRefre
     }
 
     public static void forward(IDevice iDevice, int port, int target) {
-        String name = String.format("process-%s-forward-%d", iDevice.getSerialNumber(), target);
+        String name = String.format("process-%s-forward-%d", iDevice.getProperty("persist.radio.serialno"), target);
         Integer oldP = forwardPortMap.get(name);
         if (oldP != null) {
             removeForward(iDevice, oldP, target);
         }
         try {
-            log.info("{} device {} forward to {}", iDevice.getSerialNumber(), target, port);
+            log.info("{} device {} forward to {}", iDevice.getProperty("persist.radio.serialno"), target, port);
             iDevice.createForward(port, target);
             forwardPortMap.put(name, port);
         } catch (Exception e) {
@@ -345,9 +351,9 @@ public class AndroidDeviceBridgeTool implements ApplicationListener<ContextRefre
      */
     public static void removeForward(IDevice iDevice, int port, String serviceName) {
         try {
-            log.info("cancel {} device {} port forward to {}", iDevice.getSerialNumber(), serviceName, port);
+            log.info("cancel {} device {} port forward to {}", iDevice.getProperty("persist.radio.serialno"), serviceName, port);
             iDevice.removeForward(port);
-            String name = String.format("process-%s-forward-%s", iDevice.getSerialNumber(), serviceName);
+            String name = String.format("process-%s-forward-%s", iDevice.getProperty("persist.radio.serialno"), serviceName);
             if (forwardPortMap.get(name) != null) {
                 forwardPortMap.remove(name);
             }
@@ -358,9 +364,9 @@ public class AndroidDeviceBridgeTool implements ApplicationListener<ContextRefre
 
     public static void removeForward(IDevice iDevice, int port, int target) {
         try {
-            log.info("cancel {} device {} forward to {}", iDevice.getSerialNumber(), target, port);
+            log.info("cancel {} device {} forward to {}", iDevice.getProperty("persist.radio.serialno"), target, port);
             iDevice.removeForward(port);
-            String name = String.format("process-%s-forward-%d", iDevice.getSerialNumber(), target);
+            String name = String.format("process-%s-forward-%d", iDevice.getProperty("persist.radio.serialno"), target);
             if (forwardPortMap.get(name) != null) {
                 forwardPortMap.remove(name);
             }
@@ -381,7 +387,7 @@ public class AndroidDeviceBridgeTool implements ApplicationListener<ContextRefre
 //    public static void pushLocalFile(IDevice iDevice, String localPath, String remotePath) {
 //        AndroidDeviceThreadPool.cachedThreadPool.execute(() -> {
 //            //使用iDevice的pushFile方法好像有bug，暂时用命令行去推送
-//            ProcessBuilder pb = new ProcessBuilder(new String[]{getADBPathFromSystemEnv(), "-s", iDevice.getSerialNumber(), "push", localPath, remotePath});
+//            ProcessBuilder pb = new ProcessBuilder(new String[]{getADBPathFromSystemEnv(), "-s", iDevice.getProperty("persist.radio.serialno"), "push", localPath, remotePath});
 //            pb.redirectErrorStream(true);
 //            try {
 //                pb.start();
@@ -625,7 +631,7 @@ public class AndroidDeviceBridgeTool implements ApplicationListener<ContextRefre
         File file = new File(filename);
         file.mkdirs();
         String system = System.getProperty("os.name").toLowerCase();
-        String processName = String.format("process-%s-pull-file", iDevice.getSerialNumber());
+        String processName = String.format("process-%s-pull-file", iDevice.getProperty("persist.radio.serialno"));
         if (GlobalProcessMap.getMap().get(processName) != null) {
             Process ps = GlobalProcessMap.getMap().get(processName);
             ps.children().forEach(ProcessHandle::destroy);
@@ -633,7 +639,7 @@ public class AndroidDeviceBridgeTool implements ApplicationListener<ContextRefre
         }
         try {
             Process process = null;
-            String command = String.format("%s -s %s pull %s %s", getADBPathFromSystemEnv(), iDevice.getSerialNumber(), path, file.getAbsolutePath());
+            String command = String.format("%s -s %s pull %s %s", getADBPathFromSystemEnv(), iDevice.getProperty("persist.radio.serialno"), path, file.getAbsolutePath());
             if (system.contains("win")) {
                 process = Runtime.getRuntime().exec(new String[]{"cmd", "/c", command});
             } else if (system.contains("linux") || system.contains("mac")) {
@@ -705,7 +711,7 @@ public class AndroidDeviceBridgeTool implements ApplicationListener<ContextRefre
     }
 
     public static int startUiaServer(IDevice iDevice) throws InstallException {
-        Thread s = AndroidThreadMap.getMap().get(String.format("%s-uia-thread", iDevice.getSerialNumber()));
+        Thread s = AndroidThreadMap.getMap().get(String.format("%s-uia-thread", iDevice.getProperty("persist.radio.serialno")));
         if (s != null) {
             s.interrupt();
         }
@@ -734,7 +740,7 @@ public class AndroidDeviceBridgeTool implements ApplicationListener<ContextRefre
                 break;
             }
         }
-        AndroidThreadMap.getMap().put(String.format("%s-uia-thread", iDevice.getSerialNumber()), uiaThread);
+        AndroidThreadMap.getMap().put(String.format("%s-uia-thread", iDevice.getProperty("persist.radio.serialno")), uiaThread);
         return port;
     }
 

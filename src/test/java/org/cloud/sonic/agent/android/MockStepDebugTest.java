@@ -40,7 +40,7 @@ public class MockStepDebugTest {
 
         IDevice iDevice = AndroidDeviceBridgeTool.getIDeviceByUdId(udId);
 
-        androidStepHandler.setTestMode(0, 0, iDevice.getSerialNumber(), "no send server", "ddddddd");
+        androidStepHandler.setTestMode(0, 0, iDevice.getProperty("persist.radio.serialno"), "no send server", "ddddddd");
         int port = AndroidDeviceBridgeTool.startUiaServer(iDevice);
         androidStepHandler.startAndroidDriver(iDevice, port);
     }

@@ -49,11 +49,11 @@ public class AndroidTouchHandler {
     }
 
     public static void switchTouchMode(IDevice iDevice, TouchMode mode) {
-        touchModeMap.put(iDevice.getSerialNumber(), mode);
+        touchModeMap.put(iDevice.getProperty("persist.radio.serialno"), mode);
     }
 
     public static TouchMode getTouchMode(IDevice iDevice) {
-        return touchModeMap.get(iDevice.getSerialNumber()) == null ? TouchMode.ADB : touchModeMap.get(iDevice.getSerialNumber());
+        return touchModeMap.get(iDevice.getProperty("persist.radio.serialno")) == null ? TouchMode.ADB : touchModeMap.get(iDevice.getProperty("persist.radio.serialno"));
     }
 
     public static void tap(IDevice iDevice, int x, int y) {
@@ -117,7 +117,7 @@ public class AndroidTouchHandler {
     }
 
     private static int[] transferWithRotation(IDevice iDevice, int x, int y) {
-        Integer directionStatus = AndroidDeviceManagerMap.getRotationMap().get(iDevice.getSerialNumber());
+        Integer directionStatus = AndroidDeviceManagerMap.getRotationMap().get(iDevice.getProperty("persist.radio.serialno"));
         if (directionStatus == null) {
             directionStatus = 0;
         }
@@ -125,9 +125,9 @@ public class AndroidTouchHandler {
         int _y;
         int width;
         int height;
-        if (sizeMap.get(iDevice.getSerialNumber()) != null) {
-            width = sizeMap.get(iDevice.getSerialNumber())[0];
-            height = sizeMap.get(iDevice.getSerialNumber())[1];
+        if (sizeMap.get(iDevice.getProperty("persist.radio.serialno")) != null) {
+            width = sizeMap.get(iDevice.getProperty("persist.radio.serialno"))[0];
+            height = sizeMap.get(iDevice.getProperty("persist.radio.serialno"))[1];
         } else {
             String size = AndroidDeviceBridgeTool.getScreenSize(iDevice);
             width = Integer.parseInt(size.split("x")[0]);
@@ -144,7 +144,7 @@ public class AndroidTouchHandler {
     }
 
     public static void writeToOutputStream(IDevice iDevice, String msg) {
-        OutputStream outputStream = outputMap.get(iDevice.getSerialNumber());
+        OutputStream outputStream = outputMap.get(iDevice.getProperty("persist.radio.serialno"));
         if (outputStream != null) {
             try {
                 outputStream.write(msg.getBytes());
@@ -154,14 +154,14 @@ public class AndroidTouchHandler {
                 switchTouchMode(iDevice, TouchMode.ADB);
             }
         } else {
-            log.info("{} write output stream is null.", iDevice.getSerialNumber());
+            log.info("{} write output stream is null.", iDevice.getProperty("persist.radio.serialno"));
         }
     }
 
     public static void startTouch(IDevice iDevice) {
         stopTouch(iDevice);
         String size = AndroidDeviceBridgeTool.getScreenSize(iDevice);
-        sizeMap.put(iDevice.getSerialNumber(), Arrays.stream(size.split("x")).mapToInt(Integer::parseInt).toArray());
+        sizeMap.put(iDevice.getProperty("persist.radio.serialno"), Arrays.stream(size.split("x")).mapToInt(Integer::parseInt).toArray());
         if (AndroidDeviceBridgeTool.getOrientation(iDevice) != 0) {
             AndroidDeviceBridgeTool.pressKey(iDevice, AndroidKey.HOME);
         }
@@ -171,7 +171,7 @@ public class AndroidTouchHandler {
                 .replaceAll("\t", "");
 
         Semaphore isTouchFinish = new Semaphore(0);
-        String udId = iDevice.getSerialNumber();
+        String udId = iDevice.getProperty("persist.radio.serialno");
 
         Thread touchPro = new Thread(() -> {
             try {
@@ -276,7 +276,7 @@ public class AndroidTouchHandler {
     }
 
     public static void stopTouch(IDevice iDevice) {
-        String udId = iDevice.getSerialNumber();
+        String udId = iDevice.getProperty("persist.radio.serialno");
         if (outputMap.get(udId) != null) {
             try {
                 outputMap.get(udId).write("release \n".getBytes(StandardCharsets.UTF_8));

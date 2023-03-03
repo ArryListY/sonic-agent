@@ -51,14 +51,14 @@ public interface IAndroidWSServer {
     default void saveUdIdMapAndSet(Session session, IDevice device) {
         udIdMap.put(session, device);
         if (!ObjectUtils.isEmpty(device)) {
-            udIdSet.add(device.getSerialNumber());
+            udIdSet.add(device.getProperty("persist.radio.serialno"));
         }
     }
 
     default void removeUdIdMapAndSet(Session session) {
         IDevice device = udIdMap.remove(session);
         if (!ObjectUtils.isEmpty(device)) {
-            udIdSet.remove(device.getSerialNumber());
+            udIdSet.remove(device.getProperty("persist.radio.serialno"));
         }
     }
 }

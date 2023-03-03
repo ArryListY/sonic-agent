@@ -141,7 +141,7 @@ public class AndroidStepHandler {
         androidDriver.getUiaClient().setGlobalTimeOut(60000);
         log.sendStepLog(StepType.PASS, "连接 UIAutomator2 Server 成功", "");
         log.androidInfo("Android", iDevice.getProperty(IDevice.PROP_BUILD_VERSION),
-                iDevice.getSerialNumber(), iDevice.getProperty(IDevice.PROP_DEVICE_MANUFACTURER),
+                iDevice.getProperty("persist.radio.serialno"), iDevice.getProperty(IDevice.PROP_DEVICE_MANUFACTURER),
                 iDevice.getProperty(IDevice.PROP_DEVICE_MODEL),
                 AndroidDeviceBridgeTool.getScreenSize(iDevice));
     }
@@ -193,7 +193,7 @@ public class AndroidStepHandler {
             log.sendStepLog(StepType.WARN, "测试终止异常！请检查设备连接状态", e.fillInStackTrace().toString());
             setResultDetailStatus(ResultDetailStatus.WARN);
         } finally {
-            Thread s = AndroidThreadMap.getMap().get(String.format("%s-uia-thread", iDevice.getSerialNumber()));
+            Thread s = AndroidThreadMap.getMap().get(String.format("%s-uia-thread", iDevice.getProperty("persist.radio.serialno")));
             if (s != null) {
                 s.interrupt();
             }
@@ -212,7 +212,7 @@ public class AndroidStepHandler {
     }
 
     public String getUdId() {
-        return iDevice.getSerialNumber();
+        return iDevice.getProperty("persist.radio.serialno");
     }
 
     public AndroidDriver getAndroidDriver() {
@@ -535,7 +535,7 @@ public class AndroidStepHandler {
             ChromeDriverService chromeDriverService = new ChromeDriverService.Builder().usingAnyFreePort()
                     .usingDriverExecutable(AndroidDeviceBridgeTool.getChromeDriver(iDevice, packageName)).build();
             ChromeOptions chromeOptions = new ChromeOptions();
-            chromeOptions.setExperimentalOption("androidDeviceSerial", iDevice.getSerialNumber());
+            chromeOptions.setExperimentalOption("androidDeviceSerial", iDevice.getProperty("persist.radio.serialno"));
             chromeOptions.setExperimentalOption("androidPackage", packageName);
             if (process != null && process.length() > 0) {
                 chromeOptions.setExperimentalOption("androidProcess", process);
@@ -986,7 +986,7 @@ public class AndroidStepHandler {
             if (!folder.exists()) {
                 folder.mkdirs();
             }
-            File output = new File(folder + File.separator + iDevice.getSerialNumber() + Calendar.getInstance().getTimeInMillis() + ".png");
+            File output = new File(folder + File.separator + iDevice.getProperty("persist.radio.serialno") + Calendar.getInstance().getTimeInMillis() + ".png");
             byte[] bt = androidDriver.screenshot();
             FileImageOutputStream imageOutput = new FileImageOutputStream(output);
             imageOutput.write(bt, 0, bt.length);
@@ -1566,7 +1566,7 @@ public class AndroidStepHandler {
 
     public int[] getTheRealCoordinatesOfPoco(double pocoX, double pocoY) {
         int[] pos = new int[2];
-        Integer screenOrientation = AndroidDeviceManagerMap.getRotationMap().get(iDevice.getSerialNumber());
+        Integer screenOrientation = AndroidDeviceManagerMap.getRotationMap().get(iDevice.getProperty("persist.radio.serialno"));
         if (screenOrientation == null) {
             screenOrientation = AndroidDeviceBridgeTool.getOrientation(iDevice);
         }
@@ -1873,7 +1873,7 @@ public class AndroidStepHandler {
 
     private int[] computedPoint(double x, double y) {
         if (x <= 1 && y <= 1) {
-            Integer screenOrientation = AndroidDeviceManagerMap.getRotationMap().get(iDevice.getSerialNumber());
+            Integer screenOrientation = AndroidDeviceManagerMap.getRotationMap().get(iDevice.getProperty("persist.radio.serialno"));
             if (screenOrientation == null) {
                 screenOrientation = AndroidDeviceBridgeTool.getOrientation(iDevice);
             }
@@ -1906,7 +1906,7 @@ public class AndroidStepHandler {
                     fileWriter.write(script);
                     fileWriter.close();
                     try {
-                        String re = ProcessCommandTool.getProcessLocalCommandStr(String.format("python %s %s %s %s", temp.getAbsolutePath(), androidDriver.getSessionId(), iDevice.getSerialNumber(), globalParams.toJSONString()));
+                        String re = ProcessCommandTool.getProcessLocalCommandStr(String.format("python %s %s %s %s", temp.getAbsolutePath(), androidDriver.getSessionId(), iDevice.getProperty("persist.radio.serialno"), globalParams.toJSONString()));
                         log.sendStepLog(StepType.INFO, "", "Run result: <br>" + re);
                     } catch (Exception e) {
                         handleContext.setE(e);
